@@ -1,15 +1,5 @@
 <template>
   <v-app id="inspire">
-    <v-system-bar app>
-      <v-spacer></v-spacer>
-
-      <v-icon>mdi-square</v-icon>
-
-      <v-icon>mdi-circle</v-icon>
-
-      <v-icon>mdi-triangle</v-icon>
-    </v-system-bar>
-
     <v-main>
       <v-container
         class="py-8 px-6"
@@ -34,13 +24,11 @@
 
                     <v-list-item-content>
                       <v-list-item-title>Message {{ n }}</v-list-item-title>
-
                       <v-list-item-subtitle>
                         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil repellendus distinctio similique
                       </v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
-
                   <v-divider
                     v-if="n !== 6"
                     :key="`divider-${n}`"
@@ -56,3 +44,17 @@
   </v-app>
 </template>
 
+<script>
+  export default {
+    data: () => ({
+      cards: ['Today', 'Yesterday'],
+      drawer: null,
+      links: [
+        ['mdi-inbox-arrow-down', 'Inbox', "/"],
+        ['mdi-send', 'Send', "/about"],
+        ['mdi-delete', 'Trash', "/about"],
+        ['mdi-alert-octagon', 'Spam', "/about"],
+      ],
+    }),
+  }
+</script>
