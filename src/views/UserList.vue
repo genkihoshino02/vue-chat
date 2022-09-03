@@ -23,7 +23,7 @@
             cols="4"
           >
             <!-- <v-card height="200"></v-card> -->
-            <router-link :to="{path:'/chat',query:{ user_id:n}}">
+            <router-link :to="{path:'/chat', query:{ user_id:n}}">
                <v-avatar
                     color="grey lighten-2"
                     size="70"

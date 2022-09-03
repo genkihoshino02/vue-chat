@@ -15,23 +15,22 @@
               <v-subheader>{{ card }}</v-subheader>
 
               <v-list two-line>
-                <template v-for="n in 6">
+                <template v-for="(data, index) in messages">
                   <v-list-item
-                    :key="n"
+                    :key="index"
                   >
                     <v-list-item-avatar color="grey darken-1">
                     </v-list-item-avatar>
 
                     <v-list-item-content>
-                      <v-list-item-title>Message {{ n }}</v-list-item-title>
-                      <v-list-item-subtitle>
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil repellendus distinctio similique
+                      <v-list-item-subtitle class="message">
+                        {{ data.message }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
                   <v-divider
-                    v-if="n !== 6"
-                    :key="`divider-${n}`"
+                    v-if="index !== 6"
+                    :key="`divider-${index}`"
                     inset
                   ></v-divider>
                 </template>
@@ -40,14 +39,48 @@
           </v-col>
         </v-row>
       </v-container>
+      <v-textarea
+        v-model="body"
+        name="mdi-comment"
+        class="mx-2"
+        label="send message"
+        rows="3"
+        auto-grow
+      ></v-textarea>
+      <v-btn
+        class="mr-4"
+        type="submit"
+        :disabled="invalid"
+        @click="submit"
+      >
+      Send
+      </v-btn>
+      <v-btn
+        @click="clear"
+      >
+        CLEAR
+      </v-btn>
     </v-main>
   </v-app>
 </template>
 
 <script>
+  import firebase from '@/firebase/firebase'
   export default {
+    created() {
+      this.user_id = this.$router.query.user_id;
+
+      const chatRef = firebase.firestore().collection('chats')
+      const snapshot = chatRef.get();
+      snapshot.forEach(doc => {
+        this.messages.push(doc.data());
+      })
+    },
     data: () => ({
-      cards: ['Today', 'Yesterday'],
+      messages:[],
+      body: '',
+      user_id: '',
+      cards: ['Today'],
       drawer: null,
       links: [
         ['mdi-inbox-arrow-down', 'Inbox', "/"],
@@ -55,6 +88,31 @@
         ['mdi-delete', 'Trash', "/about"],
         ['mdi-alert-octagon', 'Spam', "/about"],
       ],
+      // invalid: false
     }),
+    computed: {
+      invalid() {
+        if (!this.body) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    },
+    methods: {
+      submit() {
+        this.messages.unshift({message: this.body});
+        this.body = '';
+      },
+      clear() {
+        this.body = '';
+      }
+    },
   }
 </script>
+
+<style scoped>
+  .message {
+    text-align: left;
+  }
+</style>
