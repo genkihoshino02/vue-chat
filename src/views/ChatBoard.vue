@@ -67,11 +67,11 @@
 <script>
   import firebase from '@/firebase/firebase'
   export default {
-    created() {
-      this.user_id = this.$router.query.user_id;
+    async created() {
+      this.user_id = this.$route.query.user_id;
 
       const chatRef = firebase.firestore().collection('chats')
-      const snapshot = chatRef.get();
+      const snapshot = await chatRef.get();
       snapshot.forEach(doc => {
         this.messages.push(doc.data());
       })
