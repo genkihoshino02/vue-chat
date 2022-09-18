@@ -115,7 +115,8 @@
                         displayName: result.user.displayName,
                         email: result.user.email,
                         uid: result.user.uid,
-                        refreshToken: result.user.refreshToken
+                        refreshToken: result.user.refreshToken,
+                        photoUrl: result.user.photoUrl
                     }
 
                     sessionStorage.setItem('user', JSON.stringify(auth))

@@ -7,13 +7,24 @@
             color="grey lighten-4"
             class="pa-4"
             >
-            <v-avatar
-                class="mb-4"
-                color="grey darken-1"
-                size="64"
-            ></v-avatar>
+            <v-avatar color="indigo">
+              <input type="file"
+                     ref="fileInput"
+                     accept="image/jpeg, image/jpg, image/png"
+                     style="display: none;"
+                     @change="updateIcon">
+              <v-icon dark
+                      @click="changeIcon"
+                      v-if="!photoUrl">
+                mdi-account-circle
+              </v-icon>
 
-            <div class="username">john@vuetifyjs.com</div>
+              <img :src="photoUrl"
+                  v-if="photoUrl">
+
+            </v-avatar>
+
+            <div class="username">{{auth && auth.displayName}}</div>
             </v-sheet>
 
             <v-divider></v-divider>
@@ -50,27 +61,68 @@
 <script>
     import firebase from '@/firebase/firebase'
     export default {
-    data: () => ({
-      drawer: null,
-      links: [
-        ['mdi-inbox-arrow-down', 'Inbox', "/"],
-        ['mdi-send', 'Send', "/about"],
-        ['mdi-delete', 'Trash', "/about"],
-        ['mdi-alert-octagon', 'Spam', "/about"],
-      ],
-    }),
-    methods: {
-      logout() {
-        firebase.auth()
-          .signOut()
-          .then(()=>{
-            localStorage.message = "logout successfully"
-            this.$router.push('/login')
-          })
-          .catch((error)=> {
-            console.log(error)
-          })
-      }
-    }
+      mounted() {
+        this.auth = JSON.parse(sessionStorage.getItem('user'))
+        this.photoUrl = this.auth.photoUrl
+      },
+      data: () => ({
+          drawer: null,
+          links: [
+            ['mdi-inbox-arrow-down', 'Inbox', "/"],
+            ['mdi-send', 'Send', "/about"],
+            ['mdi-delete', 'Trash', "/about"],
+            ['mdi-alert-octagon', 'Spam', "/about"],
+          ],
+          auth: null,
+          photoUrl: ''
+        }),
+        methods: {
+          logout() {
+            firebase.auth()
+              .signOut()
+              .then(()=>{
+                localStorage.message = "logout successfully"
+                this.$router.push('/login')
+              })
+              .catch((error)=> {
+                console.log(error)
+              })
+          },
+          changeIcon() {
+            this.$refs.fileInput.click()
+          },
+          updateIcon() {
+            const user = this.getAuth()
+            if(!user) {
+              sessionStorage.removeItem('user')
+              this.$router.push('/login')
+            }
+
+            const file = this.$refs.fileInput.files[0]
+            const filePath = `/user/${file.name}`
+
+            firebase.storage().ref()
+              .child(filePath)
+              .put(file)
+              .then(async snapshot => {
+                const photoUrl = await snapshot.ref.getDownloadURL()
+                firebase.auth().onAuthStateChanged((user) => {
+                  if(user) {
+                    user.updateProfile( {
+                      photoUrl: photoUrl
+                    })
+
+                  this.auth.photoUrl = photoUrl
+                  sessionStorage.setItem('user', JSON.stringify(this.auth))
+                  }
+                })
+              })
+          },
+          getAuth() {
+            return firebase.auth().onAuthStateChanged((user)=>{
+              return user
+            })
+          }
+        }
   }
 </script>
