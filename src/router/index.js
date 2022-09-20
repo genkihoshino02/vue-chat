@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import UserList from '../views/UserList.vue'
+// import UserList from '../views/UserList.vue'
+import RoomList from '../views/RoomList.vue'
 import ChatBoard from '../views/ChatBoard.vue'
 import Login from '../views/Login.vue'
 import SignUp from '../views/SignUp.vue'
@@ -10,8 +11,8 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
-    name: 'UserList',
-    component: UserList,
+    name: 'RoomList',
+    component: RoomList,
     meta: {requiresAuth: true}
   },
   {
