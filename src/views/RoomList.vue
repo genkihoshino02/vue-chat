@@ -72,7 +72,10 @@
             console.log(snapshot)
 
             snapshot.forEach(doc => {
-                this.rooms.push(doc.data())
+              const data = {...doc.data()}
+              data.id = doc.id
+              console.log(data)
+              this.rooms.push(data)
             })
         }
       }

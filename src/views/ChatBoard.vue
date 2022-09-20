@@ -2,7 +2,7 @@
   <v-app id="inspire">
     <sidebar />
     <v-main>
-      
+      <h1>{{ room? room.name : '' }}</h1>
       <v-container
         class="py-8 px-6"
         fluid
@@ -22,6 +22,7 @@
                     :key="index"
                   >
                     <v-list-item-avatar color="grey darken-1">
+                      <v-img :src="data.photoURL"></v-img>
                     </v-list-item-avatar>
 
                     <v-list-item-content>
@@ -75,18 +76,37 @@
       Sidebar
     },
     async created() {
-      this.user_id = this.$route.query.user_id;
+      this.roomId = this.$route.query.room_id;
 
-      const chatRef = firebase.firestore().collection('chats')
-      const snapshot = await chatRef.get();
-      snapshot.forEach(doc => {
-        this.messages.push(doc.data());
+      const roomRef = firebase.firestore().collection('rooms').doc(this.roomId)
+      const roomDoc = await roomRef.get()
+      if(!roomDoc.exists) {
+        await this.$router.push('/')
+      }
+      this.room = roomDoc.data()
+      console.log(this.room)
+
+      // const snapshot = await roomRef.collection('messages').orderBy('createdAt','asc').get()
+      // snapshot.docs.map(doc => {
+      //   this.messages.push(doc.data())
+      // })
+    },
+    mounted() {
+      this.auth = JSON.parse(sessionStorage.getItem('user'))
+    
+      const roomRef = firebase.firestore().collection('rooms').doc(this.roomId)
+      roomRef.collection('messages').orderBy('createdAt','asc')
+      .onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+          this.messages.push(change.doc.data())
+        })
       })
     },
     data: () => ({
       messages:[],
       body: '',
-      user_id: '',
+      roomId: '',
+      room: null,
       cards: ['Today'],
       drawer: null,
       links: [
@@ -95,7 +115,7 @@
         ['mdi-delete', 'Trash', "/about"],
         ['mdi-alert-octagon', 'Spam', "/about"],
       ],
-      // invalid: false
+      auth: null,
     }),
     computed: {
       invalid() {
@@ -108,7 +128,27 @@
     },
     methods: {
       submit() {
-        this.messages.unshift({message: this.body});
+        this.messages.push({
+          message: this.body,
+          name: this.auth.displayName,
+          photoURL: this.auth.photoUrl,
+          createdAt: firebase.firestore.Timestamp.now()
+        });
+
+        const roomRef = firebase.firestore().collection('rooms').doc(this.roomId)
+        roomRef.collection('messages').add({
+          message: this.body,
+          name: this.auth.displayName,
+          photoURL: this.auth.photoUrl,
+          createdAt: firebase.firestore.Timestamp.now()
+        })
+        .then(result => {
+          console.log('success', result)
+        })
+        .catch(error => {
+          console.log('fail', error)
+        })
+
         this.body = '';
       },
       clear() {
